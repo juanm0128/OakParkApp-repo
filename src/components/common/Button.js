@@ -27,8 +27,12 @@ const styles = {
         borderWidth: 1,
         borderColor: '#007aff',
         marginLeft: 5,
-        marginRight: 5
-        },
+        marginRight: 5,
+        shadowColor: '#000',
+        shadowOpacity: 0.1,
+        shadowRadius: 2,
+        elevation: 1,
+    },
 
     textStyle: {
         alignSelf: 'center',

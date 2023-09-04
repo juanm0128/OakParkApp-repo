@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import {StyleSheet, Text, View, Dimensions, TouchableOpacity, Image, Platform } from 'react-native';
+import {StyleSheet, Text, View, Dimensions, TouchableOpacity, Image, Platform, ScrollView } from 'react-native';
 import { Dropdown } from 'react-native-element-dropdown';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import { onAuthStateChanged } from "firebase/auth";
@@ -25,6 +25,7 @@ const { dropDownWidth } = Dimensions.get('window');
 
 const CreateTicketScreen = () => {
     const [value, setValue] = React.useState(null);
+    const [label, setLabel] = React.useState(null);
     const [Focus, setFocus] = React.useState(false);
     const [probStatement, setProbStatement] = React.useState(null);
     const [location, setLocation] = React.useState(null);
@@ -107,7 +108,7 @@ const CreateTicketScreen = () => {
     });
 
     const onButtonPress = async () => { 
-        setTkSubmitError('Ticket submision Initial phase')
+        setTkSubmitError('Ticket submission pending...')
     
         var oldTicketNo = user.userTkNo;
         var newTicketNo = oldTicketNo + 1;
@@ -123,17 +124,58 @@ const CreateTicketScreen = () => {
         const LclTicketNo = Math.floor(Math.random() * 1000000 + 1);
         setTicketNo(LclTicketNo)
 
-        const docRef =  await addDoc(collection(db, "ticketCollection"), {
+
+
+        if(label == null || issueDescr == null || probStatement == null){
+            onSubmitTicketIsNull()
+        }
+        else{
+           if(image==null){
+                      const docRef =  await addDoc(collection(db, "ticketCollection"), {
+                           issueLabel: label,
+                           issueDescr: issueDescr,
+                           probStatement: probStatement,
+                           userEmail: userEmail,
+                           userId: userId,
+                           userTkNo: newTicketNo,
+                           userTkState: 'New',
+                           userDateTime:userDateTime
+                      })
+                      .then (onSubmitTicketSucess)
+                      .catch(onSubmitTicketFail)
+           }
+
+           if(image!=null){
+                       const docRef =  await addDoc(collection(db, "ticketCollection"), {
+                           issueLabel: label,
+                           issueDescr: issueDescr,
+                           probStatement: probStatement,
+                           userEmail: userEmail,
+                           userId: userId,
+                           userTkNo: newTicketNo,
+                           userTkState: 'New',
+                           userDateTime:userDateTime,
+                           userImage: image
+                       })
+                       .then (onSubmitTicketSucess)
+                       .catch(onSubmitTicketFail)
+           }
+
+        }
+
+
+        /*const docRef =  await addDoc(collection(db, "ticketCollection"), {
          issueDescr: issueDescr,
          probStatement: probStatement,
          userEmail: userEmail,
          userId: userId,
          userTkNo: newTicketNo,
          userTkState: 'New',
-         userDateTime:userDateTime
+         userDateTime:userDateTime,
+         userImage: image
         })
         .then (onSubmitTicketSucess)
-        .catch(onSubmitTicketFail)
+        .catch(onSubmitTicketFail)*/
     }
     
     const onSubmitTicketSucess = () => {
@@ -143,12 +185,18 @@ const CreateTicketScreen = () => {
     
     const onSubmitTicketFail = () => {
         setLoading(true),
-        setTkSubmitError('Ticket submision failed')
+        setTkSubmitError('Ticket submission failed')
+    }
+
+    const onSubmitTicketIsNull = () => {
+        setLoading(true),
+        setTkSubmitError('Please fill out all required info.')
     }
 
     //{renderLabelItem()}
 
         return (
+        <ScrollView>
         <Card>
              <Dropdown
                 data={DATA}
@@ -161,13 +209,14 @@ const CreateTicketScreen = () => {
                 maxHeight={300}
                 labelField="label"
                 valueField="value"
-                placeholder={!Focus ? ' What is your issue?' : '...'}
+                placeholder={!Focus ? 'What is your issue?' : ' ... '}
                 searchPlaceholder="Search"
                 value={value}
                 onFocus={() => setFocus(true)}
                 onBlur={() => setFocus(false)}
                 onChange={item => {
                     setValue(item.value);
+                    setLabel(item.label);
                     setFocus(false);
                 }}
                 renderLeftIcon={() => (
@@ -214,19 +263,22 @@ const CreateTicketScreen = () => {
                 <ImageButton onPress={pickImage}>
                     Upload an image (optional)
                 </ImageButton>
-                {image!=null && <Image source={{ uri: image }} style={{ width: 250, height: 250 }} />}
+                {image!=null && <Image source={{ uri: image }} style={{ width: 250, height: 250 }} onChange={image => setImage(image)}/>}
               </View>
             </CardSection>
 
-            
-            <Text style={styles.errorTextStyle}>
-                {tkSubmitError}
-            </Text>
+            <Text></Text>
 
             <Button onPress={onButtonPress}>
                 Submit Ticket
             </Button>
+
+            <Text style={styles.errorTextStyle}>
+                {tkSubmitError}
+            </Text>
+
         </Card>
+        </ScrollView>
     );
 }
  
@@ -234,7 +286,8 @@ const styles = StyleSheet.create({
     errorTextStyle: {
       fontSize: 15,
       alignSelf: 'center',
-      color: 'red'
+      color: 'red',
+      marginTop: 20
     },
     container: {
         backgroundColor: 'white',
@@ -268,7 +321,7 @@ const styles = StyleSheet.create({
         fontSize: 18,
     },
     selectedTextStyle: {
-        fontSize: 16,
+        fontSize: 18,
     },
     iconStyle: {
         width: 20,

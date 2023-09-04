@@ -17,7 +17,7 @@ const Card = (props) => {
 
 const styles = {
     containterStyle: {
-        borderWidth: 2,
+        borderWidth: 0,
         borderRadius: 4,
         borderColor: '#fff',
         borderBottomWidth: 0,
@@ -26,10 +26,6 @@ const styles = {
         width: (Dimensions.get('window').width-10), // New line
         paddingHorizontal: 20, // New line
         position: 'relative',
-        shadowColor: '#000',
-        shadowOpacity: 0.1,
-        shadowRadius: 2,
-        elevation: 1,
         marginLeft: 5,
         marginRight: 5,
         marginTop: 10

@@ -8,6 +8,7 @@ import {
   DrawerContentScrollView,
   DrawerItemList,
   getFocusedRouteNameFromRoute,
+  DrawerToggleButton
 } from '@react-navigation/drawer';
 
 //import Tasks from './Tasks';
@@ -19,11 +20,16 @@ import CreateTicketScreen from './CreateTicketScreen';
 import ViewTicketScreen from './ViewTicketScreen';
 import { query, where } from "firebase/firestore";
 import LoginForm from './LoginForm';
+import UpdateTicketByUserScreen from './UpdateTicketByUserScreen';
+import { useNavigation, Screen, Navigator, NavigationContainer } from '@react-navigation/native';
+import FontAwesome from '@expo/vector-icons/FontAwesome';
+import {DrawerActions} from '@react-navigation/native';
 
 const Drawer = createDrawerNavigator();
 
 const CustomDrawer = props => {
   const {isLoggedIn, setIsLoggedIn } = useLogin();
+  const navigation = useNavigation();
   const email = auth.currentUser.email
   const userDocRef = doc(db,"userProfileCollection", email)
   const [user, setUser] = useState({})
@@ -41,11 +47,17 @@ const CustomDrawer = props => {
       }
     }
     getUser()
+    navigation.setOptions({
+          headerLeft: () => (
+            <DrawerToggleButton onPress={() => navigation.dispatch(DrawerActions.openDrawer())}    />
+          ),
+        });
   },[])
 
      return (
     <View style={{ flex: 1 }}>
       <DrawerContentScrollView {...props}>
+      <TouchableOpacity onPress={() => navigation.navigate('UserProfile')}>
         <View
           style={{
             flexDirection: 'row',
@@ -56,7 +68,7 @@ const CustomDrawer = props => {
             marginBottom: 20,
           }}
         >
-      
+
           <View>
             <Text>{(userProfileActive === true) ? user.userName : 'Default Name' }</Text>
             <Text>{(userProfileActive === true) ? user.userEmail : auth.currentUser.email }</Text>
@@ -70,6 +82,7 @@ const CustomDrawer = props => {
             style={{ width: 60, height: 60, borderRadius: 30 }}
           />
         </View>
+        </TouchableOpacity>
         <DrawerItemList {...props} />
       </DrawerContentScrollView>
       <TouchableOpacity
@@ -110,7 +123,7 @@ const DrawerNavigator = () => {
   return (
     <Drawer.Navigator
       screenOptions={{
-        headerShown: true, // old argument was true
+        headerShown: false, // old argument was true
         headerStyle: {
           backgroundColor: 'transparent',
           elevation: 0,
@@ -122,6 +135,7 @@ const DrawerNavigator = () => {
       <Drawer.Screen component={CreateTicketScreen} name='CreateTicketScreen' options={{ drawerLabel: 'Create Ticket', title: 'Create Ticket' }} />
       <Drawer.Screen component={UserProfile} name='UserProfile' options={{ drawerLabel: 'Update User Profile', title: 'User Profile' }} />
       <Drawer.Screen component={ViewTicketScreen} name='ViewTicketScreen' options={{ drawerLabel: 'View Ticket Summary', title: 'View Tickets' }} />
+
     </Drawer.Navigator>
   );
 };
